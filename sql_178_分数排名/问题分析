@@ -1,0 +1,36 @@
+我的解答
+
+select t3.Score,t2.Rank from Scores t3 join
+(select t1.score,count(t1.count_) Rank from
+(SELECT distinct s1.Score score,s2.Score count_
+FROM Scores s1 , Scores s2
+where s1.Score <= s2.Score
+order by s1.Score DESC ) t1 group by t1.score) t2
+on t2.score = t3.Score order by t3.Score DESC;
+
+有三层嵌套
+把score和自身做笛卡尔积去除重复和不符合要求的组合
+获得的表不能直接获得count()
+于是我们再加一层用count获得排名
+此时排名已经取得但是数量不对
+此时只要获得原来的值做一个join 完工
+
+学习分析
+
+SELECT Score, Rank FROM
+(SELECT Score,
+@curRank := IF(@prevRank = Score, @curRank+0,@curRank:=@curRank+1) AS Rank,
+@prevRank := Score
+FROM Scores, (
+SELECT @curRank :=0, @prevRank := NULL
+) r
+ORDER BY Score DESC) s
+
+
+if 函数
+select name,if(sex=0,'女','男') as sex from student;
+变量@
+
+
+mysql8.0提供
+rank常识排名, dense_rank如题, row_number无并列
