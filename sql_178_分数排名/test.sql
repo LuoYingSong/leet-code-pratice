@@ -26,4 +26,10 @@ SELECT Score, Rank FROM
 FROM Scores, (
 SELECT @curRank :=0, @prevRank := NULL
 ) r
-ORDER BY Score DESC) s
+ORDER BY Score DESC) s;
+
+SELECT Score,
+@curRank := IF(@prevRank = Score, @curRank+0,@curRank:=@curRank+1) AS Rank,
+@prevRank := Score
+FROM Scores, (
+SELECT @curRank :=0, @prevRank := NULL)t;
