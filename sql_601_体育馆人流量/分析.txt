@@ -1,0 +1,112 @@
+我的答案
+select
+        id,
+        visit_date,
+        people
+    from
+        (select
+            COUNT(*) counter,
+            group1
+        from
+            (select
+                @count_:=IF(id-1=@preid,
+                @count_+1,
+                1),
+                @groupID:=IF(id-1=@preid,
+                @groupID,
+                @groupID+1) as group1,
+                if(@count>=3,
+                people,
+                null),
+                @preid:=id,
+                visit_date,
+                id
+            from
+                stadium,
+                (select
+                    @preid:=null,
+                    @groupID:=0,
+                    @count_:=0)value
+            where
+                people>=100
+            )t2
+        GROUP BY
+            t2.group1)t
+    join
+        (
+            (
+                select
+                    @count2_:=IF(id-1=@preid2,
+                    @count2_+1,
+                    1),
+                    @groupID2:=IF(id-1=@preid2,
+                    @groupID2,
+                    @groupID2+1) as group1,
+                    if(@count>=3,
+                    people,
+                    null),
+                    people,
+                    @preid2:=id,
+                    visit_date,
+                    id
+                from
+                    stadium,
+                    (select
+                        @preid2:=null,
+                        @groupID2:=0,
+                        @count2_:=0)value
+                where
+                    people>=100
+                )
+        )t2
+            on t.group1=t2.group1
+    where
+        counter>=3
+    order by
+
+
+分析
+又是一步一步摸出来的
+
+step1
+select * stadium where people>=100;
+筛选出大于100的日志
+step2
+这时候需要思考，如何取得连续3天的100人的数据，
+设置一个counter变量计算
+设置一个group计算同一组
+step3
+这时候再groupby group
+把大于3的拿下
+然后join step2的表 完事
+
+
+大神代码分析
+SELECT id, visit_date, people
+FROM (
+	SELECT r1.*, @flag := if((r1.countt >= 3 OR @flag = 1) AND r1.countt != 0, 1, 0) AS flag
+	FROM (
+		SELECT s.*, @count := if(s.people >= 100, @count + 1, 0) AS `countt`
+		FROM stadium s, (SELECT @count := 0) b
+	) r1, (SELECT @flag := 0) c
+	ORDER BY id DESC
+) result
+WHERE flag = 1 ORDER BY id;
+
+作者：zhangyi
+链接：https://leetcode-cn.com/problems/human-traffic-of-stadium/solution/zhi-xing-yong-shi-136msji-bai-963de-yong-hu-nei-cu/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+count想法相同
+但是没有用到group
+而是用一个flag计算
+如果<100 flag=0
+>100就是flag=1
+最重要的来了
+倒序表
+然后大于3设置成1
+(r1.countt >= 3 OR @flag = 1) AND r1.countt != 0
+这个就可以计算出那些符合要求 那些不符合
+
+
