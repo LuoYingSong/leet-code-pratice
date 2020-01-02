@@ -1,0 +1,109 @@
+感谢评论中 铬天青S 提到题目存在问题：
+In the case of a tie, the lowest player_id wins
+中文意思应为平局应该选择得分最低的选手
+
+先直接show答案
+
+SELECT group_id, player AS 'player_id'
+FROM (
+SELECT group_id, player, total
+, IF(@preGroup = group_id, NULL, 1) AS flag
+, @preGroup := group_id
+FROM (
+SELECT player, group_id, SUM(score) AS total
+FROM (
+SELECT first_player AS 'player', first_score AS 'score', group_id
+FROM Matches
+JOIN Players ON first_player = player_id
+UNION ALL
+SELECT second_player, second_score, group_id
+FROM Matches
+JOIN Players ON first_player = player_id
+) t
+GROUP BY player
+ORDER BY group_id, total DESC, player
+) t, (
+SELECT @preGroup := NULL
+) t2
+) t
+WHERE flag = 1;
+
+说一下自己的思路
+
+第一步
+题目可以理解成求每组得分之和最大的player_id
+所以Match表操作起来不容易，就先把他拆成两列
+SELECT player, group_id, SUM(score) AS total
+FROM (
+SELECT first_player AS 'player', first_score AS 'score', group_id
+FROM Matches
+JOIN Players ON first_player = player_id
+UNION ALL
+SELECT second_player, second_score, group_id
+FROM Matches
+JOIN Players ON first_player = player_id
+得到表
+
+
+
+第二步
+拿到表之后就计算每一个玩家的总和。
+select player,group_id,sum(score) as total from
+(select first_player as 'player',first_score as 'score',group_id
+from Matches
+join Players
+on first_player=player_id
+union all
+select second_player,second_score,group_id
+from Matches
+join Players
+on first_player=player_id
+)t
+group by player
+
+
+第三步，优化第二步的表
+让表进行排序
+select player,group_id,sum(score) as total from
+(select first_player as 'player',first_score as 'score',group_id
+from Matches
+join Players
+on first_player=player_id
+union all
+select second_player,second_score,group_id
+from Matches
+join Players
+on first_player=player_id
+)t
+group by player
+order by group_id,total desc,player
+
+
+观察可以看到每个id出现的第一行就是我们所需要的值
+
+第四步引入临时变量
+select group_id,player,total,IF(@preGroup=group_id,null,1) as flag,@preGroup:=group_id from
+(select player,group_id,sum(score) as total from
+(select first_player as 'player',first_score as 'score',group_id
+from Matches
+join Players
+on first_player=player_id
+union all
+select second_player,second_score,group_id
+from Matches
+join Players
+on first_player=player_id
+)t
+group by player
+order by group_id,total desc ,player)t,(select @preGroup:=null)t2
+得到
+
+此时我们只要取flag=1的行即可完成
+
+推导出答案
+
+
+作者：relu-5
+链接：https://leetcode-cn.com/problems/tournament-winners/solution/jian-dan-si-lu-shi-xian-by-relu-5/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
