@@ -1,0 +1,41 @@
+刚开始误以为是计算至少三个月的记录
+select
+       @money := ROUND(IF(@preId=Id ,@money+Salary,Salary),0) as 'Salary2',
+       @countt := IF(@preId=Id,@countt-1,3),
+       @preId:=Id
+       from
+(select Employee.Id,Employee.Month,Employee.Salary from Employee join (
+    select max(Month) as 'max_month',
+           id
+    from Employee
+    group by id)t
+    on t.Id=Employee.id where Month !=max_month
+)t,(select @preId := null,@money:=null,@countt:=3)t2 order by t.id,Month;
+后来才发现 只要最近三个月的记录 想破头都没有idea，所以只得看解析
+思维受限，利用两张表相互拼起可以形成一个过滤的规则
+step1
+select *
+from Employee t1,
+     Employee t2
+where
+t1.id = t2.id
+and t1.Month<=t2.Month
+and t1.Month>=t2.Month-2
+and t1.id=1;
+左边是之前月记录的信息
+右边是当前月记录
+step2
+只要group by右边求sum（）就可以达到想要的想过
+select t1.id,t2.Month,sum(t1.Salary) as 'Salary'
+from Employee t1,
+     Employee t2
+where
+t1.id = t2.id
+and t1.Month<=t2.Month
+and t1.Month>=t2.Month-2
+group by t2.Id,t2.Month
+order by Id,Month desc;
+这时候为了处理最大月的问题
+(t1.id,t2.Month) not in (select id,max(Month) from Employee group by id)
+加入这个即可实现去除分组最大的效果
+
