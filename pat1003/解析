@@ -1,0 +1,65 @@
+def main():
+    ptr_num, line_num, start_ptr, end_ptr = list(map(lambda x:int(x),input().split(' ')))
+    people = list(map(lambda x:int(x),input().split(' ')))
+    dist_list = [[-1 for j in range(ptr_num)] for i in range(int(ptr_num))]
+    used = [False for _ in range(ptr_num)]
+    for i in range(line_num):
+        str4=list(map(lambda x:int(x),input().split(' ')))
+        dist_list[str4[0]][str4[1]] = str4[2]
+        dist_list[str4[1]][str4[0]] = str4[2]
+    min_dist = [1000 for i in range(ptr_num)]
+    min_dist[start_ptr] = 0
+    people_list = [0 for i in range(ptr_num)]
+    people_list[start_ptr] = people[start_ptr]
+    line_num = [0 for i in range(ptr_num)]
+    line_num[start_ptr] = 1
+    while True:
+        v = -1
+        for u in range(ptr_num):
+            if not used[u] and (v == -1 or min_dist[u] < min_dist[v]):
+                v = u
+        if v == -1:
+            break
+        used[v] = True
+        for u in range(ptr_num):
+            if dist_list[u][v] != -1 :
+                old_dist = min_dist[u]
+                new_dist = min_dist[v] + dist_list[u][v]
+                if old_dist > new_dist:
+                    min_dist[u] = new_dist
+                    people_list[u] = people_list[v] + people[u]
+                    line_num[u] = line_num[v]
+                if old_dist == new_dist:
+                    line_num[u] += line_num[v]
+                    people_list[u] = max(people_list[v] + people[u],people_list[u])
+    print(line_num[end_ptr],people_list[end_ptr])
+
+if __name__ == '__main__':
+
+    main()
+
+Dijkstra的一个变种
+Dijkstra理解
+step1
+选择起点
+step2
+找距离最近的点
+step3
+标记
+step3
+找剩下未标记的距离最近的点 取出最短距离点
+遍历全部点 更新距离， min（min_dist[u]，min_dist[v] + dist_list[u][v]）
+直到所有点都被搜索过一次
+
+本题坑爹之处在于需要计算相同路径的点数
+if old_dist == new_dist:
+   line_num[u] += line_num[v]
+这段代码  如果路径相同 就把到新路径总路径数量
+加上到V的点的数量。
+多多领悟
+
+
+
+
+解析高手代码
+answer.py
