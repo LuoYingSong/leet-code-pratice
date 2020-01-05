@@ -1,0 +1,14 @@
+字符串可以直接进行比较 min max所有都是依赖
+__cmp__(self, other)    是比较方法里面最基本的的魔法方法
+
+__eq__(self, other) 定义相等符号的行为，==
+
+__ne__(self,other)  定义不等符号的行为，！=
+
+__lt__(self,other)  定义小于符号的行为，<
+
+__gt__(self,other)  定义大于符号的行为，>
+
+__le__(self,other)  定义小于等于符号的行为，<=
+
+__ge__(self,other)  定义大于等于符号的行为，>=

@@ -12,4 +12,24 @@ Truncate table employee;
 insert into employee (employee_id, department_id) values ('1', '1');
 insert into employee (employee_id, department_id) values ('2', '2');
 insert into employee (employee_id, department_id) values ('3', '2');
+# end
 
+
+select t.date as 'pay_month',
+       department_id,
+       IF(department_money=company_money,'same',IF(department_money>company_money,'higher','lower'))
+           as 'comparison' from
+    (select DATE_FORMAT(pay_date,'%Y-%m') as date,department_id,avg(amount) as 'department_money'
+    from salary
+    join employee
+    on employee.employee_id = salary.employee_id
+    group by DATE_FORMAT(pay_date,'%Y-%m'),department_id)t
+        join(select avg(amount) as 'company_money' ,DATE_FORMAT(pay_date,'%Y-%m') as 'date'
+from salary
+group by DATE_FORMAT(pay_date,'%Y-%m'))t2 on t.date=t2.date order by t.date desc,department_id;
+
+select avg(amount),DATE_FORMAT(pay_date,'%Y-%m')
+from salary
+#     join employee
+#         on salary.employee_id = employee.employee_id
+group by DATE_FORMAT(pay_date,'%Y-%m');

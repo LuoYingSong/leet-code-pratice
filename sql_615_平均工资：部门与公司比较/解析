@@ -1,0 +1,26 @@
+select t.date as 'pay_month',
+       department_id,
+       IF(department_money=company_money,'same',IF(department_money>company_money,'higher','lower'))
+           as 'comparison' from
+    (select DATE_FORMAT(pay_date,'%Y-%m') as date,department_id,avg(amount) as 'department_money'
+    from salary
+    join employee
+    on employee.employee_id = salary.employee_id
+    group by DATE_FORMAT(pay_date,'%Y-%m'),department_id)t
+        join(select avg(amount) as 'company_money' ,DATE_FORMAT(pay_date,'%Y-%m') as 'date'
+from salary
+group by DATE_FORMAT(pay_date,'%Y-%m'))t2 on t.date=t2.date order by t.date desc,department_id;
+
+简要 DATE_FORMAT() 格式化输出
+case
+when condition
+
+then
+when condition
+
+then
+else
+
+end
+
+别的就容易了 嵌套 拼表
