@@ -1,0 +1,29 @@
+SELECT IF(
+    (SELECT sum(Frequency)
+    FROM Numbers)%2,min(Number), IF(sum_=round(
+        (SELECT sum(Frequency)
+        FROM Numbers)/2),avg(Number),min(Number))) AS 'median'
+FROM 
+    (SELECT *
+    FROM 
+        (SELECT * ,
+        @sum_:=@sum_+Frequency AS 'sum_'
+        FROM 
+            (SELECT *
+            FROM Numbers
+            ORDER BY  Number asc)t2,
+                (SELECT @sum_:=0)t)t
+                WHERE sum_ >= 
+                    (SELECT sum(Frequency)
+                    FROM Numbers)/2 limit 2) t;
+
+思路
+首先计算一个sum
+当sum_ >= 1/2的时候
+如果是奇数直接取这个值
+如果是偶数
+就要判断
+如果sum_=1/2
+就要去这个值和下一个值
+为了保证下个值取到 使用LIMIT2 AVG的方式
+如果大于 就不要考虑这个问题了直接冲
