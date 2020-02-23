@@ -1,0 +1,48 @@
+最终答案
+select product_id,new_price as 'price' from
+    (select *,@flag:=IF(product_id=@preId,0,1) as 'flag' ,@preId:=product_id
+from
+(select *
+from Products
+where change_date<='2019-08-16'
+order by product_id,change_date desc)t,(select @preId:=null,@flag:=null)t2)t
+where flag
+union
+select product_id,10 from Products where product_id not in (select product_id from Products
+    where change_date<='2019-08-16');
+
+
+step1
+select *
+from Products
+where change_date<='2019-08-16'
+order by product_id,change_date desc
+按照选取顺序取表 让最新日期的显示在最上面
+
+step2
+select *,@flag:=IF(product_id=@preId,0,1) as 'flag' ,@preId:=product_id
+from
+(select *
+from Products
+where change_date<='2019-08-16'
+order by product_id,change_date desc)t,(select @preId:=null,@flag:=null)t2)t
+where flag
+引入变量flag flag表示是否为第一次出现的数据 preId储存上一次出现的id
+
+step3
+select product_id,new_price as 'price' from
+    (select *,@flag:=IF(product_id=@preId,0,1) as 'flag' ,@preId:=product_id
+from
+(select *
+from Products
+where change_date<='2019-08-16'
+order by product_id,change_date desc)t,(select @preId:=null,@flag:=null)t2)t
+where flag
+选取flag = 1的值即为最新的修改后的价格
+
+step4
+针对在16号之后出现 16号之前没出现的数据，表示没修改过价格为10
+union
+select product_id,10 from Products where product_id not in (select product_id from Products
+    where change_date<='2019-08-16');
+连接上表得到最终答案
