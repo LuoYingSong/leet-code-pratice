@@ -1,4 +1,3 @@
-#encoding:gbk
 import sys
 
 class Bank:
@@ -28,31 +27,52 @@ class Bank:
         min_index = None
         for people in self.now_server.keys():
             if self.now_server[people][1] < min_time:
-                min_index = people #办完事得人
-                min_queue_num = self.now_server[people][0] #办完事情所在的队伍
-                min_time = self.now_server[people][1] #办完事所花费得时间
+                min_index = people
+                min_queue_num = self.now_server[people][0]
+                min_time = self.now_server[people][1]
+        if not self.now_server.keys():
+            return None,None
         self.queue[min_queue_num].pop(0)
         if len(self.wait_list) == 0:
             pass
         else:
             next_people = self.wait_list.pop(0)
             self.queue[min_queue_num].append(next_people)
+        # print(self.now_server)
         del self.now_server[min_index]
         for server_people in self.now_server.keys():
             self.now_server[server_people][1] -= min_time
         # print(self.queue,min_queue_num)
         if len(self.queue[min_queue_num]):
+            # print(self.time,print(self.queue[min_queue_num][0]))
             self.now_server[self.queue[min_queue_num][0]] = [min_queue_num,self.index2time[self.queue[min_queue_num][0]]]
+
         self.time += min_time
-        if self.time > 60 * 9:
+        # print(self.time - self.index2time[min_index])
+        if self.time - self.index2time[min_index] >= 60 * 9:
+            # print(self.time)
             return None, None
         return self.time, min_index
-
 if __name__ == '__main__':
-    bank = Bank(2,2,[1, 2, 6, 4, 3, 534, 2])
-    for i in range(len([1, 2, 6, 4, 3, 534, 2])):
-        # print(bank.now_server)
-        a,b = bank.next()
-        print(a,b)
-        # if not a:
-        #     break
+    queue_num, queue_length, _,_ = list(map(lambda x: int(x), input().split(' ')))
+    all_queue = list(map(lambda x: int(x), input().split(' ')))
+    output_list = list(map(lambda x: int(x), input().split(' ')))
+    bank = Bank(queue_num=queue_num,queue_length=queue_length,all_queue=all_queue)
+    saver = {}
+    for i in range(len(all_queue)):
+        time, index = bank.next()
+        if time == None:
+            continue
+        saver[index] = time
+    for output in output_list:
+        output = output -1
+        if output not in saver.keys():
+            print('sorry')
+        else:
+            time = saver[output]
+            if output+1 == output_list[-1]:
+                print('{}:{}'.format(8 + time // 60 if 8 + time // 60 >= 10 else '0' + str(8 + time // 60),
+                                     time % 60 if time % 60 >= 10 else '0' + str(time % 60)),end='')
+            else:
+                print('{}:{}'.format( 8+time//60 if 8+time//60>=10 else '0'+str(8+time//60),
+                                  time%60 if time%60>=10 else '0'+str(time%60)))
